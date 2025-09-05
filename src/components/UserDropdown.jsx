@@ -17,7 +17,7 @@ import { auth } from "@/firebase/config";
 
 const UserDropdown = ({ user }) => {
   const { displayName, email, uid, photoURL } = user;
-  const [imgSrc, setImgSrc] = useState(photoURL ?? "./../images/user-img.jpg");
+  const [imgSrc, setImgSrc] = useState(photoURL ?? "/profile.png");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [isLoading, setIsLoading] = useState(false);
