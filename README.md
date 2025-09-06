@@ -6,3 +6,6 @@
   #my contact:
    - email : rushi7gaikwad@gmail.com
    - phone : 7397829548
+Live Demo URL  : https://emailtron-frontend.vercel.app ( deployed on vercel )
+
+- documentation is in Mailtron AI.docx file in root folder of project
