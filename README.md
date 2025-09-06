@@ -9,3 +9,4 @@
 Live Demo URL  : https://emailtron-frontend.vercel.app ( deployed on vercel )
 
 - documentation is in Mailtron AI.docx file in root folder of project
+- https://github.com/rushikesh125/emailtron-frontend/blob/main/Mailtron%20AI.docx
