@@ -1,7 +1,2 @@
-# This Repo is template in nextjs with some 👇
-- Lucid react icons 
-- shadcn ui 
-- firebase 
-- gemini
-- redux ( redux toolkit,react-redux)
-- react-hot-toast
+FRONTEND := https://github.com/rushikesh125/emailtron-frontend
+BACKEND := https://github.com/rushikesh125/emailtron-api

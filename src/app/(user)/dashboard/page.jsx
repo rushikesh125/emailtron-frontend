@@ -3,9 +3,10 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Mail, AlertTriangle, BarChart2, Loader2 } from "lucide-react";
+import { Mail, AlertTriangle, BarChart2, Loader2, Clock } from "lucide-react";
 import { Chart as ChartJS, ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend } from "chart.js";
 import { Pie, Bar } from "react-chartjs-2";
+import { toast } from "sonner"; // or use your preferred toast library
 
 ChartJS.register(ArcElement, BarElement, CategoryScale, LinearScale, Tooltip, Legend);
 
@@ -21,6 +22,9 @@ export default function Dashboard() {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [unprocessedEmails, setUnprocessedEmails] = useState(0);
+  const [processing, setProcessing] = useState(false);
+  const [processingStatus, setProcessingStatus] = useState('');
 
   const fetchDashboardData = async () => {
     if (!user?.uid) {
@@ -62,11 +66,77 @@ export default function Dashboard() {
     }
   };
 
+  const fetchUnprocessedEmails = async () => {
+    if (!user?.uid) return;
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/unprocessedmails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.uid }),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to fetch unprocessed emails count');
+      }
+
+      const data = await res.json();
+      setUnprocessedEmails(data.remaning || 0);
+    } catch (error) {
+      console.error("Error fetching unprocessed emails:", error);
+    }
+  };
+
+  const processEmailsWithAI = async () => {
+    if (!user?.uid || processing) return;
+
+    setProcessing(true);
+    setProcessingStatus('Processing emails with AI...');
+
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/process-emails`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId: user.uid }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to process emails');
+      }
+
+      toast.success(data.message || 'Emails processed successfully!');
+      setProcessingStatus('Processing completed!');
+      
+      // Refresh the counts
+      setTimeout(() => {
+        fetchUnprocessedEmails();
+        fetchDashboardData();
+        setProcessing(false);
+        setProcessingStatus('');
+      }, 1000);
+
+    } catch (error) {
+      console.error("Error processing emails:", error);
+      toast.error(error.message || 'Failed to process emails');
+      setProcessing(false);
+      setProcessingStatus('');
+    }
+  };
+
   useEffect(() => {
-    fetchDashboardData();
+    if (user?.uid) {
+      fetchDashboardData();
+      fetchUnprocessedEmails();
+    }
   }, [user?.uid]);
 
-  // Chart data for Sentiment Distribution (Pie)
+  // Chart data and options (same as before)
   const sentimentChartData = {
     labels: dashboardData.sentimentCounts.map(item => item.sentiment),
     datasets: [{
@@ -77,7 +147,6 @@ export default function Dashboard() {
     }],
   };
 
-  // Chart data for Category Distribution (Bar)
   const categoryChartData = {
     labels: dashboardData.categoryCounts.map(item => item.category),
     datasets: [{
@@ -90,7 +159,6 @@ export default function Dashboard() {
     }],
   };
 
-  // Chart data for Processing Priority Distribution (Bar)
   const priorityChartData = {
     labels: dashboardData.processingPriorityCounts.map(item => `Priority ${item.processingPriority}`),
     datasets: [{
@@ -134,7 +202,7 @@ export default function Dashboard() {
   const renderContent = () => {
     if (loading) {
       return (
-        <div className="flex justify-center items-center py-20">
+        <div className="flex justify-center items-center py-16">
           <Loader2 className="h-10 w-10 text-theme-purple animate-spin" />
         </div>
       );
@@ -158,6 +226,51 @@ export default function Dashboard() {
 
     return (
       <div className="space-y-8">
+        {/* Unprocessed Emails Section */}
+        <Card className="bg-white shadow-lg rounded-xl border-none hover:shadow-xl transition-shadow duration-300">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <div className="flex items-center gap-3">
+              <div className="bg-blue-100 p-2 rounded-lg">
+                <Clock className="h-6 w-6 text-blue-600" />
+              </div>
+              <CardTitle className="text-gray-900 text-lg font-semibold">
+                AI Processing Queue
+              </CardTitle>
+            </div>
+            <span className="text-2xl font-bold text-gray-900">{unprocessedEmails}</span>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-600 mb-4">
+              {unprocessedEmails === 1 
+                ? 'email needs AI processing' 
+                : 'emails need AI processing'}
+            </p>
+            <Button
+              onClick={processEmailsWithAI}
+              disabled={processing || unprocessedEmails === 0}
+              className="w-full bg-theme-purple hover:bg-theme-purple/90 text-white py-2 px-4 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  {processingStatus || 'Processing...'}
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4" />
+                  Process with AI Now
+                </>
+              )}
+            </Button>
+            {processing && (
+              <p className="text-sm text-gray-500 mt-2 text-center">
+                {processingStatus}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Existing Dashboard Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <Card className="bg-white shadow-lg rounded-xl border-none hover:shadow-xl transition-shadow duration-300">
             <CardHeader className="flex items-center gap-3">
@@ -187,6 +300,7 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card className="bg-white shadow-lg rounded-xl border-none hover:shadow-xl transition-shadow duration-300">
             <CardHeader>
@@ -225,17 +339,6 @@ export default function Dashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-none">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-theme-purple/10 p-2 rounded-lg">
-              <Mail className="h-6 w-6 text-theme-purple" />
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900">Email Dashboard</h1>
-          </div>
-        </div>
-      </header>
-
       <main className="container mx-auto py-8">
         {renderContent()}
       </main>

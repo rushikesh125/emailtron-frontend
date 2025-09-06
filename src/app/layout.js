@@ -6,6 +6,7 @@ import { Toaster } from "react-hot-toast";
 import ReduxProvider from "@/components/ReduxProvider";
 import NavBar from "@/components/Navbar";
 import DashNav from "@/components/DashNav"; // Added import for DashNav
+import { Footer } from "react-day-picker";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,9 +30,10 @@ export default function RootLayout({ children }) {
         <ReduxProvider>
           {/* Render DashNav for /dashboard routes, NavBar for others */}
           {pathname.startsWith('/dashboard') ? <DashNav /> : <NavBar />}
-          <div className="py-20">
+          <div className="py-16">
             {children}
           </div>
+          {pathname.startsWith('/dashboard') ? "" : <Footer/>}
         </ReduxProvider>
 
         <Toaster />

@@ -35,9 +35,11 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Filter, Search, Mail, Loader2, SortAsc, SortDesc } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function MyMails() {
-  const user = useSelector(state => state.user);
+  const user = useSelector((state) => state.user);
+  const router = useRouter();
   const [emails, setEmails] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,13 +77,16 @@ export default function MyMails() {
     });
 
     try {
-      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/emails?${params.toString()}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ userId: user.uid }),
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/emails?${params.toString()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: user.uid }),
+        }
+      );
 
       if (!res.ok) {
         throw new Error(`Failed to fetch: ${res.status} ${res.statusText}`);
@@ -212,7 +217,8 @@ export default function MyMails() {
               {emails.map((email) => (
                 <TableRow
                   key={email.id}
-                  className="hover:bg-gray-50/50 transition-colors duration-200 border-t border-gray-100"
+                  onClick={()=>router.push(`/dashboard/mymails/${email.id}`)}
+                  className="cursor-pointer hover:bg-gray-50/50 transition-colors duration-200 border-t border-gray-100"
                 >
                   <TableCell className="font-medium text-gray-900 py-4 px-4">
                     {email.sender}
@@ -248,7 +254,16 @@ export default function MyMails() {
                     {email.meta.category}
                   </TableCell>
                   <TableCell className="text-gray-700 py-4 px-4">
-                    {email.meta.processingPriority}
+                    <span
+                      className={`
+    inline-flex items-center justify-center w-8 h-8 rounded-full text-white font-medium
+    ${email.meta.processingPriority === 1 ? "bg-red-500" : ""}
+    ${email.meta.processingPriority === 2 ? "bg-yellow-500" : ""}
+    ${email.meta.processingPriority === 3 ? "bg-green-500" : ""}
+  `}
+                    >
+                      {Number(email.meta.processingPriority)}
+                    </span>
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-gray-700 py-4 px-4">
                     {email.meta.issueSummary}
@@ -322,7 +337,7 @@ export default function MyMails() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-none">
+      {/* <header className="bg-white shadow-sm border-none">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center gap-3">
             <div className="bg-theme-purple/10 p-2 rounded-lg">
@@ -333,7 +348,7 @@ export default function MyMails() {
             </h1>
           </div>
         </div>
-      </header>
+      </header> */}
 
       <main className="container mx-auto py-6">
         <div className="mb-6">
@@ -453,7 +468,7 @@ export default function MyMails() {
                       sortOrder === "asc"
                         ? "bg-theme-purple/10 text-theme-purple"
                         : ""
-                      }`}
+                    }`}
                   >
                     Ascending <SortAsc className="ml-2 h-4 w-4" />
                   </DropdownMenuItem>
@@ -463,7 +478,7 @@ export default function MyMails() {
                       sortOrder === "desc"
                         ? "bg-theme-purple/10 text-theme-purple"
                         : ""
-                      }`}
+                    }`}
                   >
                     Descending <SortDesc className="ml-2 h-4 w-4" />
                   </DropdownMenuItem>

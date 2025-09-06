@@ -23,6 +23,7 @@ import UserDropdown from "@/components/UserDropdown";
 import { useSelector } from "react-redux";
 import DashNav from "@/components/DashNav";
 import Logo from "@/components/Logo";
+import { DynamicBreadcrumb } from "@/components/DynamicBreadcrumb";
 
 const DashboardLayout = ({ children }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -139,6 +140,7 @@ const DashboardLayout = ({ children }) => {
         <DashNav toggleMenu={toggleMenu} />
 
         {/* Main Content Area */}
+        <DynamicBreadcrumb/>
         {children}
       </div>
     </div>
