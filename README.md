@@ -6,7 +6,11 @@
   #my contact:
    - email : rushi7gaikwad@gmail.com
    - phone : 7397829548
-Live Demo URL  : https://emailtron-frontend.vercel.app ( deployed on vercel )
+   
+
+\n - Live Demo URL  : https://emailtron-frontend.vercel.app ( deployed on vercel )
+- email: rushi@gmail.com 
+- pass: 12344321
 
 - documentation is in Mailtron AI.docx file in root folder of project
 - https://github.com/rushikesh125/emailtron-frontend/blob/main/Mailtron%20AI.docx ( download to view it ) 
